@@ -2,17 +2,23 @@
 namespace App;
 
 use Dotenv\Dotenv;
+use Dotenv\Exception\InvalidPathException;
 
 class Config
 {
     public static function load(string $basePath): void
     {
-        $dotenv = Dotenv::createImmutable($basePath);
-        $dotenv->load();
+        // .env ファイルの読み込みは任意にしてエラーを握りつぶす
+        try {
+            $dotenv = Dotenv::createImmutable($basePath);
+            $dotenv->load();
 
-        // 必須項目のバリデート
-        $required = ['APPLICATION_ID', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD'];
-        $dotenv->required($required)->notEmpty();
+            // 必須項目のバリデート
+            $required = ['APPLICATION_ID', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD'];
+            $dotenv->required($required)->notEmpty();
+        } catch (InvalidPathException $e) {
+            // .env がなくても無視（Renderなど環境変数が設定されている場合）
+        }
     }
 
     public static function get(string $key): string
@@ -26,13 +32,12 @@ class Config
 
     public static function getDsn(): string
     {
-        // Supabase などで与えられる DATABASE_URL があればそれを使用
         $databaseUrl = getenv('DATABASE_URL');
         if ($databaseUrl !== false) {
             return $databaseUrl;
         }
 
-        $conn = self::get('DB_CONNECTION'); // 'pgsql' or 'mysql'
+        $conn = self::get('DB_CONNECTION');
         $host = self::get('DB_HOST');
         $port = self::get('DB_PORT');
         $db   = self::get('DB_DATABASE');
