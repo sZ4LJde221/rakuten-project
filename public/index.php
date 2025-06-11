@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// JSONリクエストならこのファイル自身で処理
+// JSON リクエストならこのファイル自身で処理
 if (isset($_GET['json']) && $_GET['json'] === '1') {
     header('Content-Type: application/json; charset=utf-8');
     require __DIR__ . '/api/fetch_books.php';
@@ -28,7 +28,8 @@ try {
 <head>
   <meta charset="UTF-8">
   <title>100円以下電子書籍一覧</title>
-  <link rel="stylesheet" href="assets/css/style.css">
+  <!-- ルート相対パスに変更 -->
+  <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
   <h1>ようこそ！100円以下電子書籍一覧サイトへ</h1>
@@ -43,8 +44,12 @@ try {
     <p>Loading...</p>
   </div>
   <script>
+    // 楽天アプリID
     window.RAKUTEN_APP_ID = <?= $appId ? json_encode($appId) : 'null' ?>;
+    // API エンドポイント
+    window.API_ENDPOINT = '/api/fetch_books.php?json=1';
   </script>
-  <script src="assets/js/app.js"></script>
+  <!-- ルート相対パスに変更 -->
+  <script src="/assets/js/app.js"></script>
 </body>
 </html>
