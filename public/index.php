@@ -28,7 +28,7 @@ try {
 <head>
   <meta charset="UTF-8">
   <title>100円以下電子書籍一覧</title>
-  <!-- ルート相対パスに変更 -->
+  <!-- ルート相対パス -->
   <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
@@ -44,12 +44,10 @@ try {
     <p>Loading...</p>
   </div>
   <script>
-    // 楽天アプリID
-    window.RAKUTEN_APP_ID = <?= $appId ? json_encode($appId) : 'null' ?>;
-    // API エンドポイント
-    window.API_ENDPOINT = '/api/fetch_books.php?json=1';
+    // JSON 用エンドポイントを統一
+    window.API_ENDPOINT = '/index.php?json=1';
   </script>
-  <!-- ルート相対パスに変更 -->
+  <!-- ルート相対パス -->
   <script src="/assets/js/app.js"></script>
 </body>
 </html>
