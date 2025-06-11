@@ -1,0 +1,6 @@
+# .gitignore
+/vendor/
+/logs/
+/.env
+/db_data/
+node_modules/
