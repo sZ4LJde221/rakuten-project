@@ -16,3 +16,11 @@ RUN pecl install apcu \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
+
+# vhost の DocumentRoot を public に変更
+RUN sed -ri \
+      -e 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
+      /etc/apache2/sites-available/000-default.conf \
+    && sed -ri \
+      -e 's|<Directory /var/www/html>|<Directory /var/www/html/public>|g' \
+      /etc/apache2/apache2.conf

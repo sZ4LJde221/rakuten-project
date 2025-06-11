@@ -1,0 +1,19 @@
+{
+    "name": "app/rakuten-project",
+    "description": "100円以下電子書籍一覧サイト",
+    "type": "project",
+    "require": {
+      "vlucas/phpdotenv": "^5.5",
+      "monolog/monolog": "^2.9"
+    },
+    "autoload": {
+      "psr-4": {
+        "App\\": "src/"
+      }
+    },
+    "config": {
+      "optimize-autoloader": true
+    },
+    "minimum-stability": "stable"
+  }
+  
