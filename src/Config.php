@@ -6,51 +6,67 @@ use Dotenv\Exception\InvalidPathException;
 
 class Config
 {
-    /**
-     * .env を読み込む。ファイルがなくても無視。
-     */
     public static function load(string $basePath): void
     {
         try {
             $dotenv = Dotenv::createImmutable($basePath);
             $dotenv->load();
-            // 必須チェック（.env があれば）
             $required = ['APPLICATION_ID', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD'];
             $dotenv->required($required)->notEmpty();
         } catch (InvalidPathException $e) {
-            // .env がなくても OK（Render の環境変数を使う場合）
+            // .env がなくても無視
         }
     }
 
-    /**
-     * 環境変数を取得。getenv→$_ENV→$_SERVER の順で探し、
-     * いずれにもなければ例外。
-     */
     public static function get(string $key): string
     {
-        $value = getenv($key);
-        if ($value === false) {
-            if (isset($_ENV[$key]) && $_ENV[$key] !== '') {
-                $value = $_ENV[$key];
-            } elseif (isset($_SERVER[$key]) && $_SERVER[$key] !== '') {
-                $value = $_SERVER[$key];
+        $value = false;
+
+        // 1. Apache 環境（apache_getenv）
+        if (function_exists('apache_getenv')) {
+            $val = apache_getenv($key, true);
+            if ($val !== false && $val !== '') {
+                $value = $val;
             }
         }
-        if ($value === false || $value === '') {
+
+        // 2. getenv()
+        if ($value === false) {
+            $val = getenv($key);
+            if ($val !== false && $val !== '') {
+                $value = $val;
+            }
+        }
+
+        // 3. $_ENV
+        if ($value === false && isset($_ENV[$key]) && $_ENV[$key] !== '') {
+            $value = $_ENV[$key];
+        }
+
+        // 4. $_SERVER
+        if ($value === false && isset($_SERVER[$key]) && $_SERVER[$key] !== '') {
+            $value = $_SERVER[$key];
+        }
+
+        if ($value === false) {
             throw new \RuntimeException("Environment variable {$key} is not set.");
         }
+
         return $value;
     }
 
-    /**
-     * DSN を組み立てて返す。
-     */
     public static function getDsn(): string
     {
-        // DATABASE_URL（Heroku/Supabase など）があれば優先
-        $databaseUrl = getenv('DATABASE_URL') ?: ($_ENV['DATABASE_URL'] ?? ($_SERVER['DATABASE_URL'] ?? false));
-        if ($databaseUrl) {
-            return $databaseUrl;
+        // Supabase など DATABASE_URL があれば優先
+        $dbUrl = false;
+        if (function_exists('apache_getenv')) {
+            $dbUrl = apache_getenv('DATABASE_URL', true);
+        }
+        if ($dbUrl === false) {
+            $dbUrl = getenv('DATABASE_URL') ?: ($_ENV['DATABASE_URL'] ?? ($_SERVER['DATABASE_URL'] ?? false));
+        }
+        if ($dbUrl) {
+            return $dbUrl;
         }
 
         $conn = self::get('DB_CONNECTION');
