@@ -31,11 +31,26 @@ class Config
     // DB 接続用の DSN を返す例
     public static function getDsn(): string
     {
+        // Supabase などで与えられる DATABASE_URL があればそれを使用
+        if (getenv('DATABASE_URL')) {
+            return getenv('DATABASE_URL');
+        }
+    
+        $conn = self::get('DB_CONNECTION'); // 'pgsql' or 'mysql'
+        $host = self::get('DB_HOST');
+        $port = self::get('DB_PORT');
+        $db   = self::get('DB_DATABASE');
+    
+        if ($conn === 'pgsql') {
+            return sprintf('pgsql:host=%s;port=%s;dbname=%s;', $host, $port, $db);
+        }
+    
         return sprintf(
             'mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4',
-            self::get('DB_HOST'),
-            self::get('DB_PORT'),
-            self::get('DB_DATABASE')
+            $host,
+            $port,
+            $db
         );
     }
+    
 }

@@ -1,4 +1,5 @@
-# docker-compose.yml (プロジェクトルート直下)
+version: '3.8'
+
 services:
   app:
     build:
@@ -6,29 +7,33 @@ services:
       dockerfile: docker/php/Dockerfile
     container_name: rakuten_app
     volumes:
-      # プロジェクトルート全体を /var/www/html にマウント
       - ./:/var/www/html:delegated
     ports:
       - "8080:80"
     environment:
+      # Postgres 向け
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: rakuten
+      DB_USERNAME: rakuten
+      DB_PASSWORD: rakutenpass
+      APPLICATION_ID: dummy    # ローカル動作確認用
       APCU_ENABLE: "yes"
     depends_on:
       - db
 
   db:
-    image: mysql:8.0
+    image: postgres:15
     container_name: rakuten_db
-    command: --default-authentication-plugin=mysql_native_password
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: rakuten
-      MYSQL_USER: rakuten
-      MYSQL_PASSWORD: rakutenpass
+      POSTGRES_USER: rakuten
+      POSTGRES_PASSWORD: rakutenpass
+      POSTGRES_DB: rakuten
     ports:
-      - "3306:3306"
+      - "5432:5432"
+    volumes:
+      - db_data2:/var/lib/postgresql/data
 
 volumes:
-  db_data:
+  db_data2:
